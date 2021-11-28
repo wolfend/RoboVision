@@ -6,17 +6,22 @@ void TaskIRRcv( void *pvParameters __attribute__((unused)) )  // This is a Task 
     //Serial.print(F("made it to IR task "));
     if (IrReceiver.decode()) {
       //IrReceiver.printIRResultShort(&Serial);
-      g.IRKeypress = IrReceiver.decodedIRData.command;
+      if (IrReceiver.decodedIRData.protocol == SONY)
+        g.IRKeypress = IrReceiver.decodedIRData.command;
+      else
+        g.IRKeypress = -1;  
       //IrReceiver.resume(); // Enable receiving of the next value
-    }
+    } 
   else {
     g.IRKeypress = -1;
   }
   //Serial.println(String()+F("keypress =")+g.IRKeypress);
   switch (g.IRKeypress) {
   case 0x74:  //up arrow = forward
-  //Serial.println(F("made it to decoded forward button "));
     g.driveState = Forward;
+    break;
+  case 0x15:  //Power = forwardTracking
+    g.driveState = ForwardTracking;
     break;
   case 0x34:  //left arrow = left
     g.turnState = Left;
@@ -29,17 +34,14 @@ void TaskIRRcv( void *pvParameters __attribute__((unused)) )  // This is a Task 
     break;
   case 0x65: //select = stop
     g.driveState = Paused;
-    Serial.println(F("made it to decoded pause button "));
+    //Serial.println(F("made it to decoded pause button "));
     break;
-  case 0x2: //"3" = Learn
-    stopRobot();
-    g.driveState = Paused;
-    huskylens.writeForget(); //Reset algorithm
-    huskylens.writeLearn(1); //learn new object
+  case 0x10: //"Channel +" = Search Right
+    g.driveState=SearchRight;
     break;
-  case 0x5: //"6" = Search
-    g.driveState=Search;
-    break;
+  case 0x12: //"Volume +" = Search Left
+    g.driveState=SearchLeft;
+    break;  
   default: 
     ;
   }

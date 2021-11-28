@@ -22,8 +22,10 @@ int ID1 = 1;
 enum driveStates {
   Paused,
   Forward,
+  ForwardTracking,
   Reverse,
-  Search
+  SearchRight,
+  SearchLeft
 };
 enum turnStates {
   Left,

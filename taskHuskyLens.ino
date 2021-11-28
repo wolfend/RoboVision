@@ -2,16 +2,6 @@ void TaskHuskyLens( void *pvParameters __attribute__((unused)) )  // This is a T
 {
   for (;;) // A Task shall never return or exit.
   {
-   //if mode change, do it
-    if (g.visionModeCurrent != g.visionModeNew){
-     g.visionModeCurrent = g.visionModeNew;
-     if (g.visionModeCurrent == lineFollowing)
-       huskylens.writeAlgorithm(ALGORITHM_LINE_TRACKING);
-     else {
-      huskylens.writeAlgorithm(ALGORITHM_OBJECT_TRACKING);
-      }
-     Serial.println(F("back from changing modes "));
-    }
     if (!huskylens.request(ID1)) {Serial.println(F("Fail to request data from HUSKYLENS, recheck the connection!"));g.driveState=Paused;}
     else if(!huskylens.isLearned()) {Serial.println(F("Nothing learned, press learn button on HUSKYLENS to learn one!"));g.driveState=Paused;}
     else if(!huskylens.available()){ 
@@ -22,8 +12,8 @@ void TaskHuskyLens( void *pvParameters __attribute__((unused)) )  // This is a T
         g.inTrack = true;
         HUSKYLENSResult result = huskylens.read();
         printResult(result);
-        if (g.driveState == Search)
-          g.driveState = Forward;
+        if (g.driveState == SearchRight || g.driveState == SearchLeft)
+          g.driveState = ForwardTracking;
         // Calculate the error:
         if (g.visionModeCurrent == lineFollowing)
          g.error = (int32_t)result.xTarget - (int32_t)160;

@@ -6,14 +6,21 @@ void TaskControlMotor( void *pvParameters __attribute__((unused)) )  // This is 
             case Forward:
               forward();
               break;
+            case ForwardTracking:
+              forwardTracking();
+              break;
             case Reverse:
               reverse();
               break;
             case Paused:
               stopRobot();
               break;
-            case Search:
-              search();
+            case SearchRight:
+              searchRight();
+              break;
+            case SearchLeft:
+              searchLeft();
+              break;
             default:
               ;
           }
@@ -36,6 +43,19 @@ void forward() {
     digitalWrite (PIN_Direction1, 0);
     digitalWrite (PIN_Direction2, 0);
     if (g.sonarDistance > WARNDIST2){     
+      g.leftSpeed = MOVE_SPEED;       
+      g.rightSpeed = MOVE_SPEED;
+      
+      analogWrite (PIN_PWM1, g.leftSpeed);
+      analogWrite (PIN_PWM2, g.rightSpeed);
+    }
+}
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void forwardTracking() {
+    digitalWrite (PIN_Direction1, 0);
+    digitalWrite (PIN_Direction2, 0);
+    if (g.sonarDistance > WARNDIST2){     
       // Perform PID algorithm.
       headingLoop.update(g.error);
   
@@ -50,7 +70,6 @@ void forward() {
       analogWrite (PIN_PWM2, g.rightSpeed);
     }
 }
-
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void reverse() {
   digitalWrite (PIN_Direction1, 1);
@@ -113,9 +132,19 @@ void right(int8_t turnTime) {
 }
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void search() {
+void searchLeft() {
   digitalWrite (PIN_Direction1, 1);
   digitalWrite (PIN_Direction2, 0);
+  g.leftSpeed = SEARCH_SPEED;
+  g.rightSpeed = SEARCH_SPEED;
+  analogWrite (PIN_PWM1, g.leftSpeed);
+  analogWrite (PIN_PWM2, g.rightSpeed);
+ }
+
+ //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void searchRight() {
+  digitalWrite (PIN_Direction1, 0);
+  digitalWrite (PIN_Direction2, 1);
   g.leftSpeed = SEARCH_SPEED;
   g.rightSpeed = SEARCH_SPEED;
   analogWrite (PIN_PWM1, g.leftSpeed);

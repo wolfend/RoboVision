@@ -35,7 +35,7 @@ void TaskSonar( void *pvParameters __attribute__((unused)) )  // Reads the sonar
         LEDblue();
       else {
         LEDred();
-        if (g.driveState == Forward){
+        if (g.driveState == Forward || g.driveState == ForwardTracking){
           g.driveState = Paused;
         }
       }
