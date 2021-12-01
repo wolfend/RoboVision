@@ -3,7 +3,6 @@ void TaskIRRcv( void *pvParameters __attribute__((unused)) )  // This is a Task 
 
   for (;;)
 {
-    //Serial.print(F("made it to IR task "));
     if (IrReceiver.decode()) {
       //IrReceiver.printIRResultShort(&Serial);
       if (IrReceiver.decodedIRData.protocol == SONY)
@@ -41,7 +40,16 @@ void TaskIRRcv( void *pvParameters __attribute__((unused)) )  // This is a Task 
     break;
   case 0x12: //"Volume +" = Search Left
     g.driveState=SearchLeft;
-    break;  
+    break; 
+  case 0x06: //"7" = Slow speed
+    g.currentSpeed=SLOW_SPEED;
+    break; 
+  case 0x07: //"8" = Normal speed
+    g.currentSpeed=MOVE_SPEED;
+    break;
+  case 0x08: //"9" = High speed
+    g.currentSpeed=FAST_SPEED;
+    break;
   default: 
     ;
   }

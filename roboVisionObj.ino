@@ -1,5 +1,5 @@
 #include <Arduino_FreeRTOS.h>
-//#include <semphr.h>  // add the FreeRTOS functions for Semaphores (or Flags).
+#include <semphr.h>  // add the FreeRTOS functions for Semaphores (or Flags).
 
 #include "PIDLoop.h"
 #include "HUSKYLENS.h"
@@ -37,8 +37,9 @@ void setup() {
   stopRobot();
   g.driveState = Paused;
   g.turnState = Straight;
+  g.currentSpeed = MOVE_SPEED;
   g.inTrack = false;
-  g.IRKeypress = 0;
+  g.IRKeypress = -1;
   Serial.begin(115200);
   Wire.begin();
   IrReceiver.begin(PIN_IRrcvr, ENABLE_LED_FEEDBACK); // Start the receiver
@@ -66,6 +67,18 @@ void setup() {
  g.visionModeNew = objectTracking;
  huskylens.writeAlgorithm(ALGORITHM_OBJECT_TRACKING); //Switch the algorithm to object tracking.
  } 
+
+  //****NOTE- the semaphore declarations and init are in code, but not acutally used in code at this time
+// Semaphores are useful to stop a Task proceeding, where it should be paused to wait,
+// because it is sharing a resource, such as the Serial port.
+// Semaphores should only be used whilst the scheduler is running, but we can set it up here.
+  if ( xSerialSemaphore == NULL )  // Check to confirm that the Serial Semaphore has not already been created.
+  {
+    xSerialSemaphore = xSemaphoreCreateMutex();  // Create a mutex semaphore we will use to manage the Serial Port
+    if ( ( xSerialSemaphore ) != NULL )
+      xSemaphoreGive( ( xSerialSemaphore ) );  // Make the Serial Port available for use, by "Giving" the Semaphore.
+  }
+  
   // Now set up the Tasks to run independently.
   
   xTaskCreate(

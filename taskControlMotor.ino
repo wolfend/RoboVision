@@ -43,8 +43,8 @@ void forward() {
     digitalWrite (PIN_Direction1, 0);
     digitalWrite (PIN_Direction2, 0);
     if (g.sonarDistance > WARNDIST2){     
-      g.leftSpeed = MOVE_SPEED;       
-      g.rightSpeed = MOVE_SPEED;
+      g.leftSpeed = g.currentSpeed;       
+      g.rightSpeed = g.currentSpeed;
       
       analogWrite (PIN_PWM1, g.leftSpeed);
       analogWrite (PIN_PWM2, g.rightSpeed);
@@ -55,17 +55,32 @@ void forward() {
 void forwardTracking() {
     digitalWrite (PIN_Direction1, 0);
     digitalWrite (PIN_Direction2, 0);
-    if (g.sonarDistance > WARNDIST2){     
-      // Perform PID algorithm.
-      headingLoop.update(g.error);
+    if (g.sonarDistance > WARNDIST2){  // Perform PID algorithm.   
+      if (g.currentSpeed == FAST_SPEED){
+        headingLoopFast.update(g.error);
+        g.leftSpeed = headingLoopFast.m_command;
+        g.rightSpeed =-headingLoopFast.m_command;
+      }
+      else{
+        if (g.currentSpeed == MOVE_SPEED){
+         headingLoopMove.update(g.error);
+         g.leftSpeed = headingLoopMove.m_command;
+         g.rightSpeed =-headingLoopMove.m_command;
+        }
+         else{
+         headingLoopSlow.update(g.error);
+         // separate heading into left and right delta wheel velocities
+         g.leftSpeed = headingLoopSlow.m_command;
+         g.rightSpeed =-headingLoopSlow.m_command;
+         }
+      }
+      
   
-      // separate heading into left and right wheel velocities.
-      g.leftSpeed = headingLoop.m_command;
-      g.rightSpeed =-headingLoop.m_command;
-  
-      g.leftSpeed += MOVE_SPEED;                      //Calculate the total left side speed
-      g.rightSpeed += MOVE_SPEED;                     //Calculate the total right side speed
-      //Serial.println(String()+g.leftSpeed+","+g.rightSpeed);
+      g.leftSpeed += g.currentSpeed;                      //Calculate the total left side speed
+      g.rightSpeed += g.currentSpeed;                     //Calculate the total right side speed
+      
+     
+    //Serial.println(String()+g.leftSpeed+","+g.rightSpeed);
       analogWrite (PIN_PWM1, g.leftSpeed);
       analogWrite (PIN_PWM2, g.rightSpeed);
     }
@@ -74,8 +89,8 @@ void forwardTracking() {
 void reverse() {
   digitalWrite (PIN_Direction1, 1);
   digitalWrite (PIN_Direction2, 1);
-  g.leftSpeed = MOVE_SPEED;
-  g.rightSpeed = MOVE_SPEED;
+  g.leftSpeed = g.currentSpeed;
+  g.rightSpeed = g.currentSpeed;
   analogWrite (PIN_PWM1, g.leftSpeed);
   analogWrite (PIN_PWM2, g.rightSpeed);
  }
@@ -93,12 +108,12 @@ void left(int8_t turnTime) {
   g.turnState = Straight;
   if (g.driveState != Paused){
       if (g.driveState != Reverse){
-        analogWrite (PIN_PWM1, MOVE_SPEED-TURN_SPEED_DELTA);
-        analogWrite (PIN_PWM2, MOVE_SPEED+TURN_SPEED_DELTA);
+        analogWrite (PIN_PWM1, g.currentSpeed-(g.currentSpeed/TURN_SPEED_DELTA));
+        analogWrite (PIN_PWM2, g.currentSpeed+(g.currentSpeed/TURN_SPEED_DELTA));
       } 
       else{
-        analogWrite (PIN_PWM1, MOVE_SPEED+TURN_SPEED_DELTA);
-        analogWrite (PIN_PWM2, MOVE_SPEED-TURN_SPEED_DELTA);
+        analogWrite (PIN_PWM1, g.currentSpeed+(g.currentSpeed/TURN_SPEED_DELTA));
+        analogWrite (PIN_PWM2, g.currentSpeed-(g.currentSpeed/TURN_SPEED_DELTA));
       }
     }
       else {
@@ -114,12 +129,12 @@ void right(int8_t turnTime) {
   g.turnState = Straight;
   if (g.driveState != Paused){
       if (g.driveState != Reverse){
-        analogWrite (PIN_PWM1, MOVE_SPEED+TURN_SPEED_DELTA);
-        analogWrite (PIN_PWM2, MOVE_SPEED-TURN_SPEED_DELTA);
+        analogWrite (PIN_PWM1, g.currentSpeed+(g.currentSpeed/TURN_SPEED_DELTA));
+        analogWrite (PIN_PWM2, g.currentSpeed-(g.currentSpeed/TURN_SPEED_DELTA));
       } 
       else{
-        analogWrite (PIN_PWM1, MOVE_SPEED-TURN_SPEED_DELTA);
-        analogWrite (PIN_PWM2, MOVE_SPEED+TURN_SPEED_DELTA);
+        analogWrite (PIN_PWM1, g.currentSpeed-(g.currentSpeed/TURN_SPEED_DELTA));
+        analogWrite (PIN_PWM2, g.currentSpeed+(g.currentSpeed/TURN_SPEED_DELTA));
       }
     }
     else {

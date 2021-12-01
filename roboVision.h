@@ -10,14 +10,14 @@ const short PIN_LEDblue = 6;
 const short PIN_IRrcvr = 5;
 const short PIN_SYSMODE = 3;
 
-PIDLoop headingLoop(120, 0, 0);
+PIDLoop headingLoopSlow(10,0,2);
+PIDLoop headingLoopMove(100, 0, 20);
+PIDLoop headingLoopFast(400,0, 100);
 HUSKYLENS huskylens;
 void printResult(HUSKYLENSResult result);
 int ID1 = 1;
+SemaphoreHandle_t xSerialSemaphore;  //semaphore to manage serial port
 
-
-
-//**********************************************************************************************
 
 enum driveStates {
   Paused,
@@ -38,10 +38,11 @@ enum visionModes {
 };
 //++++++++++++++++++++++++++++++++ Defines
 #define MIN_SONARdistance 2
+#define SLOW_SPEED       50
 #define MOVE_SPEED       80
-#define TOP_SPEED        200
+#define FAST_SPEED       130
 #define SEARCH_SPEED     40
-#define TURN_SPEED_DELTA  40
+#define TURN_SPEED_DELTA  2
 #define TURN_TIME         80
 #define SAFE_DIST         60
 #define WARNDIST1         40
@@ -61,6 +62,7 @@ int IRKeypress = -1;
 int32_t error;
 int leftSpeed = 0;                                
 int rightSpeed = 0;
+int currentSpeed;
 bool LEDred;
 bool LEDgreen;
 bool LEDblue;
